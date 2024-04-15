@@ -1,7 +1,7 @@
 #include <ctime>
 #include <cstdio>
 #include <algorithm>
-
+#include <benchmark/benchmark.h>
 // play with the array size (n) and compiler versions
 const int n = 1e6, m = 2e6;
 
@@ -68,29 +68,56 @@ float timeit(int (*lower_bound)(int)) {
 
     return duration;
 }
-
-int main() {
-    for (int i = 0; i < n; i++)
-        a[i] = rand(); // <- careful on 16-bit platforms
-    for (int i = 0; i < m; i++)
-        q[i] = rand();
-    
-    a[0] = RAND_MAX; // to avoid dealing with end-of-array iterators 
- 
-    std::sort(a, a + n);
-    build();
-
-    printf("std::lower_bound:\n");
-    float x = timeit(baseline);
-    
-    printf("branchless:\n");
-    printf("  speedup: %.2fx\n", x / timeit(branchless));
-
-    printf("branchless + prefetching:\n");
-    printf("  speedup: %.2fx\n", x / timeit(branchless_prefetch));
- 
-    printf("eytzinger:\n");
-    printf("  speedup: %.2fx\n", x / timeit(eytzinger));
- 
-    return 0;
+static void BM_baseline(benchmark::State& state) {
+    for (auto _ : state)
+        baseline(rand());
 }
+BENCHMARK(BM_baseline);
+
+// Benchmark for branchless function
+static void BM_branchless(benchmark::State& state) {
+    for (auto _ : state)
+        branchless(rand());
+}
+BENCHMARK(BM_branchless);
+
+// Benchmark for branchless_prefetch function
+static void BM_branchless_prefetch(benchmark::State& state) {
+    for (auto _ : state)
+        branchless_prefetch(rand());
+}
+BENCHMARK(BM_branchless_prefetch);
+
+// Benchmark for eytzinger function
+static void BM_eytzinger(benchmark::State& state) {
+    for (auto _ : state)
+        eytzinger(rand());
+}
+BENCHMARK(BM_eytzinger);
+
+BENCHMARK_MAIN();
+// int main() {
+//     for (int i = 0; i < n; i++)
+//         a[i] = rand(); // <- careful on 16-bit platforms
+//     for (int i = 0; i < m; i++)
+//         q[i] = rand();
+    
+//     a[0] = RAND_MAX; // to avoid dealing with end-of-array iterators 
+ 
+//     std::sort(a, a + n);
+//     build();
+
+//     printf("std::lower_bound:\n");
+//     float x = timeit(baseline);
+    
+//     printf("branchless:\n");
+//     printf("  speedup: %.2fx\n", x / timeit(branchless));
+
+//     printf("branchless + prefetching:\n");
+//     printf("  speedup: %.2fx\n", x / timeit(branchless_prefetch));
+ 
+//     printf("eytzinger:\n");
+//     printf("  speedup: %.2fx\n", x / timeit(eytzinger));
+ 
+//     return 0;
+// }
