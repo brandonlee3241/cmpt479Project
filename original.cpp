@@ -2,27 +2,26 @@
 #include <cstdio>
 #include <algorithm>
 
-const int m = 2e6;
-const int l1 = 24000; // l1
-const int l2 = 442368; // l2
-const int l3 = 3588096; // l3
+// play with the array size (n) and compiler versions
+const int n = 4000000, m = 2e6;
 
-int *a, *q, *t;
+int a[n], q[m], results[m];
+alignas(64) int t[n + 1];
 
-void build(int k, int n) {
+void build(int k = 1) {
     static int i = 0;
     if (k <= n) {
-        build(2 * k, n);
+        build(2 * k);
         t[k] = a[i++];
-        build(2 * k + 1, n);
+        build(2 * k + 1);
     }
 }
 
-int baseline(int x, int n) {
+int baseline(int x) {
     return *std::lower_bound(a, a + n, x);
 }
 
-int branchless(int x, int n) {
+int branchless(int x) {
     int *base = a, len = n;
     while (len > 1) {
         int half = len / 2;
@@ -32,7 +31,15 @@ int branchless(int x, int n) {
     return *(base + (*base < x));
 }
 
-int eytzinger(int x, int n) {
+int eyt_no_pre(int x) {
+    int k = 1;
+    while (k <= n)
+        k = 2 * k + (t[k] < x);
+    k >>= __builtin_ffs(~k);
+    return t[k];
+}
+
+int eytzinger(int x) {
     int k = 1;
     while (k <= n) {
         __builtin_prefetch(t + k * 16);
@@ -42,13 +49,13 @@ int eytzinger(int x, int n) {
     return t[k];
 }
 
-float timeit(int (*lower_bound)(int, int), int n) {
+float timeit(int (*lower_bound)(int)) {
     clock_t start = clock();
 
     int checksum = 0;
 
     for (int i = 0; i < m; i++)
-        checksum += lower_bound(q[i], n);
+        checksum += lower_bound(q[i]);
     
     float duration = float(clock() - start) / CLOCKS_PER_SEC;
 
@@ -58,42 +65,30 @@ float timeit(int (*lower_bound)(int, int), int n) {
     return duration;
 }
 
-void run_test(int n) {
-    a = new int[n];
-    q = new int[m];
-    t = new int[n + 1];
-
+int main() {
     for (int i = 0; i < n; i++)
-        a[i] = rand();
+        a[i] = rand(); // <- careful on 16-bit platforms
     for (int i = 0; i < m; i++)
         q[i] = rand();
     
     a[0] = RAND_MAX; // to avoid dealing with end-of-array iterators 
-
+ 
     std::sort(a, a + n);
-    build(1, n);
+    build();
 
     printf("std::lower_bound:\n");
-    float x = timeit(baseline, n);
+    float x = timeit(baseline);
     
     printf("branchless:\n");
-    printf("  speedup: %.2fx\n", x / timeit(branchless, n));
+    printf("  speedup: %.2fx\n", x / timeit(branchless));
+    
+    printf("eyt_no_pre:\n");
+    printf("  speedup: %.2fx\n", x / timeit(eyt_no_pre));
+
+    printf("eytzinger prefetch:\n");
+    printf("  speedup: %.2fx\n", x / timeit(eytzinger));
+
+    
  
-    printf("eytzinger:\n");
-    printf("  speedup: %.2fx\n", x / timeit(eytzinger, n));
-
-    delete[] a;
-    delete[] q;
-    delete[] t;
-}
-
-int main() {
-    printf("L1 cache:\n");
-    run_test(l1);
-    printf("\nL2 cache:\n");
-    run_test(l2);
-    printf("\nL3 cache:\n");
-    run_test(l3);
-
     return 0;
 }
