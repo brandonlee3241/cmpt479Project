@@ -26,7 +26,6 @@ void prepare(int *a, int _n) {
 
 int interpolation_search(int x) {
     int lo = 1, hi = n;
-
     while (lo <= hi && x >= t[lo] && x <= t[hi]) {
         __builtin_prefetch(t + lo * B);
         __builtin_prefetch(t + hi * B);

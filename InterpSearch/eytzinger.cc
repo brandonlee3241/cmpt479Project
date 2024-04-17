@@ -43,3 +43,21 @@ int interpolation_search(int x) {
     }
     return -1;
 }
+// int interpolation_search(int x) {
+//     int lo = 0, hi = n - 1;
+//     int padding_value = 0; // Change this to the value you're using for padding
+
+//     while (lo <= hi && t[hi] != padding_value) {
+//         // Calculate the position based on the indices, not the values
+//         int pos = lo + ((hi - lo) / 2);
+
+//         if (t[pos] == x)
+//             return pos;
+
+//         if (t[pos] < x)
+//             lo = pos + 1;
+//         else
+//             hi = pos - 1;
+//     }
+//     return -1;
+// }
