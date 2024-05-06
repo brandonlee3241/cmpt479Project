@@ -18,11 +18,11 @@ You can install these packages using pip:
 
 ```bash
 pip install matplotlib seaborn
-
+```
 Additionally, this program requires a C++ compiler (g++) and the make utility.  If you're using a Debian-based Linux distribution, you can install these with the following command:
 
 
-```sudo apt-get install g++ make
+```sudo apt-get install g++ make```
 
 
 ### Running the Program
