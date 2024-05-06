@@ -1,4 +1,4 @@
-#include "insearch.hh"
+#include "intsearch.hh"
 
 int n;
 int *_a;

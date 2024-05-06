@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < n; i++)
         a[i] = rand();
     for (int i = 0; i < m; i++)
-        q[i] = rand();
+        q[i] = rand()
 
     a[0] = RAND_MAX;
     std::sort(a, a + n);

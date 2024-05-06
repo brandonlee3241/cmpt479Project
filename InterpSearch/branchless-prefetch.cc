@@ -40,14 +40,16 @@ int interpolation_search(int x) {
     int lo = 0, hi = n - 1;
 
     while (lo <= hi && x >= t[lo] && x <= t[hi]) {
+        __builtin_prefetch(t + lo * 64);
+        __builtin_prefetch(t + hi * 64);
         if (lo == hi) {
             return t[lo] == x ? lo : -1;
         }
 
         int pos = lo + (((double)(hi - lo) / (t[hi] - t[lo])) * (x - t[lo]));
 
-        __builtin_prefetch(&t[pos / 2]);
-        __builtin_prefetch(&t[pos + (hi - pos) / 2]);
+        // __builtin_prefetch(&t[pos / 2]);
+        // __builtin_prefetch(&t[pos + (hi - pos) / 2]);
 
         int is_equal = (t[pos] == x);
         int is_less = (t[pos] < x);
